@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UIElements;
@@ -21,8 +18,34 @@ namespace CodeMonkey.FreeWindow {
         [SerializeField] private VisualTreeAsset videoTemplateVisualTreeAsset;
 
 
+        private VisualElement lectureListVisualElement;
+        private VisualElement mainMenuVisualElement;
+
+
         static MainWindowFree() {
             EditorApplication.update += Startup;
+        }
+
+        public void CreateGUI() {
+            // Each editor window contains a root VisualElement object
+            VisualElement root = rootVisualElement;
+
+            // Instantiate UXML
+            VisualElement rootVisualTreeAsset = visualTreeAsset.Instantiate();
+            rootVisualTreeAsset.style.flexGrow = 1f;
+            root.Add(rootVisualTreeAsset);
+
+            lectureListVisualElement = root.Q<VisualElement>("lectureList");
+            mainMenuVisualElement = root.Q<VisualElement>("mainMenu");
+
+            root.Q<Label>("versionLabel").text = CodeMonkeyFreeSO.GetCodeMonkeyFreeSO().currentVersion;
+
+            Button lectureListButton = mainMenuVisualElement.Q<Button>("lectureListButton");
+            lectureListButton.RegisterCallback((ClickEvent clickEvent) => {
+                //ShowLectureButtons();
+            });
+
+            ShowMainMenu();
         }
 
         private static void Startup() {
@@ -36,7 +59,7 @@ namespace CodeMonkey.FreeWindow {
                     // Too soon
                     return;
                 }
-                
+
                 codeMonkeyInteractiveSO.lastShownTimestamp = unixTimestamp;
 
                 ShowWindow();
@@ -44,16 +67,6 @@ namespace CodeMonkey.FreeWindow {
                 Debug.LogError(e);
             }
         }
-
-
-
-        private enum SubWindow {
-            MainMenu,
-        }
-
-
-        private VisualElement lectureListVisualElement;
-        private VisualElement mainMenuVisualElement;
 
 
         [MenuItem("Code Monkey/Code Monkey Free Assets", priority = 0)]
@@ -150,7 +163,7 @@ namespace CodeMonkey.FreeWindow {
             VisualElement videoVisualElement = AddVideoReference(videoTemplateVisualTreeAsset, containerVisualElement, waitingSprite, title, url, videoReferenceSettings);
 
             UnityWebRequest unityWebRequest = UnityWebRequestTexture.GetTexture(imageUrl);
-            unityWebRequest.SendWebRequest().completed += (AsyncOperation asyncOperation) => {
+            unityWebRequest.SendWebRequest().completed += asyncOperation => {
                 try {
                     UnityWebRequestAsyncOperation unityWebRequestAsyncOperation = asyncOperation as UnityWebRequestAsyncOperation;
 
@@ -172,7 +185,7 @@ namespace CodeMonkey.FreeWindow {
 
         private static void SetBackgroundImage(VisualElement visualElement, string imageUrl) {
             UnityWebRequest unityWebRequest = UnityWebRequestTexture.GetTexture(imageUrl);
-            unityWebRequest.SendWebRequest().completed += (AsyncOperation asyncOperation) => {
+            unityWebRequest.SendWebRequest().completed += asyncOperation => {
                 try {
                     UnityWebRequestAsyncOperation unityWebRequestAsyncOperation = asyncOperation as UnityWebRequestAsyncOperation;
 
@@ -198,7 +211,7 @@ namespace CodeMonkey.FreeWindow {
             VisualElement videoVisualElement = videoTemplateVisualTreeAsset.Instantiate();
 
             VisualElement videoContainer = videoVisualElement.Q<VisualElement>("videoContainer");
-            videoContainer.RegisterCallback<ClickEvent>((ClickEvent clickEvent) => {
+            videoContainer.RegisterCallback((ClickEvent clickEvent) => {
                 Debug.Log("Clicked: " + url);
                 Application.OpenURL(url);
             });
@@ -223,11 +236,6 @@ namespace CodeMonkey.FreeWindow {
             return videoVisualElement;
         }
 
-        public class VideoReferenceSettings {
-            public float? height;
-            public float? fontSize;
-        }
-
         private SubWindow GetActiveSubWindow() {
             /*if (lectureListVisualElement.style.display == DisplayStyle.Flex) {
                 return SubWindow.LectureList;
@@ -235,34 +243,12 @@ namespace CodeMonkey.FreeWindow {
             return SubWindow.MainMenu;
         }
 
-        public void CreateGUI() {
-            // Each editor window contains a root VisualElement object
-            VisualElement root = rootVisualElement;
-
-            // Instantiate UXML
-            VisualElement rootVisualTreeAsset = visualTreeAsset.Instantiate();
-            rootVisualTreeAsset.style.flexGrow = 1f;
-            root.Add(rootVisualTreeAsset);
-
-            lectureListVisualElement = root.Q<VisualElement>("lectureList");
-            mainMenuVisualElement = root.Q<VisualElement>("mainMenu");
-
-            root.Q<Label>("versionLabel").text = CodeMonkeyFreeSO.GetCodeMonkeyFreeSO().currentVersion;
-
-            Button lectureListButton = mainMenuVisualElement.Q<Button>("lectureListButton");
-            lectureListButton.RegisterCallback((ClickEvent clickEvent) => {
-                //ShowLectureButtons();
-            });
-
-            ShowMainMenu();
-        }
-
         private void ShowMainMenu() {
             lectureListVisualElement.style.display = DisplayStyle.None;
             mainMenuVisualElement.style.display = DisplayStyle.Flex;
 
             // Check for updates
-            CodeMonkeyFreeSO.CheckForUpdates((CodeMonkeyFreeSO.LastUpdateResponse lastUpdateResponse) => {
+            CodeMonkeyFreeSO.CheckForUpdates(lastUpdateResponse => {
                 if (codeMonkeyFreeSO.currentVersion == lastUpdateResponse.version) {
                     mainMenuVisualElement.Q<VisualElement>("checkingForUpdates").style.display = DisplayStyle.None;
                     return;
@@ -285,7 +271,7 @@ namespace CodeMonkey.FreeWindow {
             VisualElement messageVisualElement =
                 mainMenuVisualElement.Q<VisualElement>("message");
 
-            CodeMonkeyFreeSO.GetLatestMessage((CodeMonkeyFreeSO.WebsiteLatestMessage websiteLatestMessage) => {
+            CodeMonkeyFreeSO.GetLatestMessage(websiteLatestMessage => {
                 messageVisualElement.Q<Label>("messageLabel").text = websiteLatestMessage.text;
             });
 
@@ -309,7 +295,7 @@ namespace CodeMonkey.FreeWindow {
             qotdVisualElement.Q<Button>("answerDButton").style.display = DisplayStyle.None;
             qotdVisualElement.Q<Button>("answerEButton").style.display = DisplayStyle.None;
 
-            CodeMonkeyFreeSO.GetLastQOTD((CodeMonkeyFreeSO.LastQOTDResponse lastQOTDResponse) => {
+            CodeMonkeyFreeSO.GetLastQOTD(lastQOTDResponse => {
                 openQotdURL = () => {
                     string qotdUrl = "https://unitycodemonkey.com/qotd_ask.php?q=" + lastQOTDResponse.questionId;
                     Application.OpenURL(qotdUrl);
@@ -360,7 +346,7 @@ namespace CodeMonkey.FreeWindow {
 
 
 
-            CodeMonkeyFreeSO.GetWebsiteLatestVideos((CodeMonkeyFreeSO.LatestVideos latestVideos) => {
+            CodeMonkeyFreeSO.GetWebsiteLatestVideos(latestVideos => {
                 AddLatestVideoReference(latestVideos.videos[0], latestVideosVisualElement.Q<VisualElement>("_1Container"));
                 AddLatestVideoReference(latestVideos.videos[1], latestVideosVisualElement.Q<VisualElement>("_2Container"));
                 AddLatestVideoReference(latestVideos.videos[2], latestVideosVisualElement.Q<VisualElement>("_3Container"));
@@ -396,7 +382,7 @@ namespace CodeMonkey.FreeWindow {
                 Application.OpenURL(getTopLinkUrl());
             });
 
-            CodeMonkeyFreeSO.GetLastDynamicHeader((CodeMonkeyFreeSO.LastDynamicHeaderResponse lastDynamicHeaderResponse) => {
+            CodeMonkeyFreeSO.GetLastDynamicHeader(lastDynamicHeaderResponse => {
                 getTopLinkUrl = () => "https://cmonkey.co/" + lastDynamicHeaderResponse.topLink;
 
                 dynamicHeaderVisualElement.Q<VisualElement>("image").style.display = DisplayStyle.Flex;
@@ -412,6 +398,15 @@ namespace CodeMonkey.FreeWindow {
         }
 
 
+
+        private enum SubWindow {
+            MainMenu,
+        }
+
+        public class VideoReferenceSettings {
+            public float? fontSize;
+            public float? height;
+        }
     }
 
 

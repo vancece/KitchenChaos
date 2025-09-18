@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 
 namespace CodeMonkey.FreeWindow {
 
-    [CreateAssetMenu()]
+    [CreateAssetMenu]
     public class CodeMonkeyFreeSO : ScriptableObject {
 
 
@@ -14,23 +14,6 @@ namespace CodeMonkey.FreeWindow {
 
 
         private static CodeMonkeyFreeSO codeMonkeyFreeSO;
-
-
-        public static CodeMonkeyFreeSO GetCodeMonkeyFreeSO() {
-            if (codeMonkeyFreeSO != null) {
-                return codeMonkeyFreeSO;
-            }
-            string[] codeMonkeyFreeSOGuidArray = AssetDatabase.FindAssets(nameof(CodeMonkeyFreeSO));
-
-            foreach (string codeMonkeyFreeSOGuid in codeMonkeyFreeSOGuidArray) {
-                string codeMonkeyFreeSOPath = AssetDatabase.GUIDToAssetPath(codeMonkeyFreeSOGuid);
-                codeMonkeyFreeSO = AssetDatabase.LoadAssetAtPath<CodeMonkeyFreeSO>(codeMonkeyFreeSOPath);
-                return codeMonkeyFreeSO;
-            }
-
-            Debug.LogError("Cannot find CodeMonkeyFreeSO!");
-            return null;
-        }
 
 
 
@@ -50,30 +33,20 @@ namespace CodeMonkey.FreeWindow {
         [SerializeField] private long websiteLatestVideosTimestamp;
 
 
+        public static CodeMonkeyFreeSO GetCodeMonkeyFreeSO() {
+            if (codeMonkeyFreeSO != null) {
+                return codeMonkeyFreeSO;
+            }
+            string[] codeMonkeyFreeSOGuidArray = AssetDatabase.FindAssets(nameof(CodeMonkeyFreeSO));
 
+            foreach (string codeMonkeyFreeSOGuid in codeMonkeyFreeSOGuidArray) {
+                string codeMonkeyFreeSOPath = AssetDatabase.GUIDToAssetPath(codeMonkeyFreeSOGuid);
+                codeMonkeyFreeSO = AssetDatabase.LoadAssetAtPath<CodeMonkeyFreeSO>(codeMonkeyFreeSOPath);
+                return codeMonkeyFreeSO;
+            }
 
-        [Serializable]
-        private struct GenericActionJSONData {
-            public string at;
-            public string st;
-        }
-
-        [Serializable]
-        private struct WebsiteResponse {
-            public int returnCode;
-            public string returnText;
-        }
-
-        [Serializable]
-        private struct WebsiteResponse<T> {
-            public int returnCode;
-            public T returnText;
-        }
-
-        [Serializable]
-        public struct LastUpdateResponse {
-            public string version;
-            public string versionUrl;
+            Debug.LogError("Cannot find CodeMonkeyFreeSO!");
+            return null;
         }
 
         public static void CheckForUpdates(Action<LastUpdateResponse> onFoundUpdate) {
@@ -103,11 +76,11 @@ namespace CodeMonkey.FreeWindow {
                 st = codeMonkeyInteractiveSO.subtype,
             });
             byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
-            unityWebRequest.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
-            unityWebRequest.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+            unityWebRequest.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            unityWebRequest.downloadHandler = new DownloadHandlerBuffer();
             unityWebRequest.SetRequestHeader("Content-Type", "application/json");
 
-            unityWebRequest.SendWebRequest().completed += (AsyncOperation asyncOperation) => {
+            unityWebRequest.SendWebRequest().completed += asyncOperation => {
                 try {
                     UnityWebRequestAsyncOperation unityWebRequestAsyncOperation = asyncOperation as UnityWebRequestAsyncOperation;
 
@@ -137,17 +110,6 @@ namespace CodeMonkey.FreeWindow {
             };
         }
 
-        [Serializable]
-        public struct LastQOTDResponse {
-            public string questionId;
-            public string questionText;
-            public string answerA;
-            public string answerB;
-            public string answerC;
-            public string answerD;
-            public string answerE;
-        }
-
         public static void GetLastQOTD(Action<LastQOTDResponse> onResponse) {
             CodeMonkeyFreeSO codeMonkeyInteractiveSO = GetCodeMonkeyFreeSO();
             long unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -170,11 +132,11 @@ namespace CodeMonkey.FreeWindow {
                 at = "getLastQotd",
             });
             byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
-            unityWebRequest.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
-            unityWebRequest.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+            unityWebRequest.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            unityWebRequest.downloadHandler = new DownloadHandlerBuffer();
             unityWebRequest.SetRequestHeader("Content-Type", "application/json");
 
-            unityWebRequest.SendWebRequest().completed += (AsyncOperation asyncOperation) => {
+            unityWebRequest.SendWebRequest().completed += asyncOperation => {
                 try {
                     UnityWebRequestAsyncOperation unityWebRequestAsyncOperation = asyncOperation as UnityWebRequestAsyncOperation;
 
@@ -204,15 +166,6 @@ namespace CodeMonkey.FreeWindow {
             };
         }
 
-        [Serializable]
-        public struct LastDynamicHeaderResponse {
-            public string topImageUrl;
-            public string topText;
-            public string topLink;
-            public string bottomText;
-            public string bottomLink;
-        }
-
         public static void GetLastDynamicHeader(Action<LastDynamicHeaderResponse> onResponse) {
             CodeMonkeyFreeSO codeMonkeyInteractiveSO = GetCodeMonkeyFreeSO();
             long unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -235,11 +188,11 @@ namespace CodeMonkey.FreeWindow {
                 at = "getDynamicEmailHeaderJson",
             });
             byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
-            unityWebRequest.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
-            unityWebRequest.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+            unityWebRequest.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            unityWebRequest.downloadHandler = new DownloadHandlerBuffer();
             unityWebRequest.SetRequestHeader("Content-Type", "application/json");
 
-            unityWebRequest.SendWebRequest().completed += (AsyncOperation asyncOperation) => {
+            unityWebRequest.SendWebRequest().completed += asyncOperation => {
                 try {
                     UnityWebRequestAsyncOperation unityWebRequestAsyncOperation = asyncOperation as UnityWebRequestAsyncOperation;
 
@@ -254,7 +207,7 @@ namespace CodeMonkey.FreeWindow {
                         WebsiteResponse websiteResponse = JsonUtility.FromJson<WebsiteResponse>(downloadText);
                         if (websiteResponse.returnCode == 1) {
                             // Success
-                            LastDynamicHeaderResponse lastDynamicHeaderResponse = 
+                            LastDynamicHeaderResponse lastDynamicHeaderResponse =
                                 JsonUtility.FromJson<LastDynamicHeaderResponse>(websiteResponse.returnText);
                             codeMonkeyInteractiveSO.lastDynamicHeaderResponse = lastDynamicHeaderResponse;
                             onResponse(codeMonkeyInteractiveSO.lastDynamicHeaderResponse);
@@ -268,13 +221,6 @@ namespace CodeMonkey.FreeWindow {
                 }
                 unityWebRequest.Dispose();
             };
-        }
-
-
-
-        [Serializable]
-        public struct WebsiteLatestMessage {
-            public string text;
         }
 
         public static void GetLatestMessage(Action<WebsiteLatestMessage> onResponse) {
@@ -300,11 +246,11 @@ namespace CodeMonkey.FreeWindow {
                 st = codeMonkeyInteractiveSO.subtype,
             });
             byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
-            unityWebRequest.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
-            unityWebRequest.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+            unityWebRequest.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            unityWebRequest.downloadHandler = new DownloadHandlerBuffer();
             unityWebRequest.SetRequestHeader("Content-Type", "application/json");
 
-            unityWebRequest.SendWebRequest().completed += (AsyncOperation asyncOperation) => {
+            unityWebRequest.SendWebRequest().completed += asyncOperation => {
                 try {
                     UnityWebRequestAsyncOperation unityWebRequestAsyncOperation = asyncOperation as UnityWebRequestAsyncOperation;
 
@@ -334,21 +280,6 @@ namespace CodeMonkey.FreeWindow {
             };
         }
 
-
-
-
-
-        [Serializable]
-        public class LatestVideos {
-            public LatestVideoSingle[] videos;
-        }
-
-        [Serializable]
-        public class LatestVideoSingle {
-            public string youTubeId;
-            public string title;
-        }
-
         public static void GetWebsiteLatestVideos(Action<LatestVideos> onResponse) {
             CodeMonkeyFreeSO codeMonkeyInteractiveSO = GetCodeMonkeyFreeSO();
             long unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -371,11 +302,11 @@ namespace CodeMonkey.FreeWindow {
                 at = "getLastVideos",
             });
             byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
-            unityWebRequest.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
-            unityWebRequest.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+            unityWebRequest.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            unityWebRequest.downloadHandler = new DownloadHandlerBuffer();
             unityWebRequest.SetRequestHeader("Content-Type", "application/json");
 
-            unityWebRequest.SendWebRequest().completed += (AsyncOperation asyncOperation) => {
+            unityWebRequest.SendWebRequest().completed += asyncOperation => {
                 try {
                     UnityWebRequestAsyncOperation unityWebRequestAsyncOperation = asyncOperation as UnityWebRequestAsyncOperation;
 
@@ -406,6 +337,73 @@ namespace CodeMonkey.FreeWindow {
         }
 
 
+
+
+        [Serializable]
+        private struct GenericActionJSONData {
+            public string at;
+            public string st;
+        }
+
+        [Serializable]
+        private struct WebsiteResponse {
+            public int returnCode;
+            public string returnText;
+        }
+
+        [Serializable]
+        private struct WebsiteResponse<T> {
+            public int returnCode;
+            public T returnText;
+        }
+
+        [Serializable]
+        public struct LastUpdateResponse {
+            public string version;
+            public string versionUrl;
+        }
+
+        [Serializable]
+        public struct LastQOTDResponse {
+            public string questionId;
+            public string questionText;
+            public string answerA;
+            public string answerB;
+            public string answerC;
+            public string answerD;
+            public string answerE;
+        }
+
+        [Serializable]
+        public struct LastDynamicHeaderResponse {
+            public string topImageUrl;
+            public string topText;
+            public string topLink;
+            public string bottomText;
+            public string bottomLink;
+        }
+
+
+
+        [Serializable]
+        public struct WebsiteLatestMessage {
+            public string text;
+        }
+
+
+
+
+
+        [Serializable]
+        public class LatestVideos {
+            public LatestVideoSingle[] videos;
+        }
+
+        [Serializable]
+        public class LatestVideoSingle {
+            public string youTubeId;
+            public string title;
+        }
     }
 
 }
