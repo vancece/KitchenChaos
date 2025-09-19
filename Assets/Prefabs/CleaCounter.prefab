@@ -294,4 +294,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   clearCounter: {fileID: 7060244285656691923}
-  visibleGameObject: {fileID: 875405815773914047}
+  visibleGameObject: {fileID: 5068832154262422618}
+--- !u!1 &5068832154262422618 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8489276541531669327, guid: 0004cb1e11ad014419b943c7da960724,
+    type: 3}
+  m_PrefabInstance: {fileID: 3717690656121849621}
+  m_PrefabAsset: {fileID: 0}
